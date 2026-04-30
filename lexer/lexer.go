@@ -61,7 +61,7 @@ func (l *Lexer) NextToken() token.Token {
 			return tok
 		}
 
-		literal := l.ReadUntilWhiteShape()
+		literal := l.ReadUntilWhiteShapeOrSpecial()
 		tok.Literal = literal
 
 		if isType(literal) {
@@ -90,9 +90,17 @@ func (l *Lexer) NextToken() token.Token {
 	return tok
 }
 
-func (l *Lexer) ReadUntilWhiteShape() string {
+func isDelimiter(ch byte) bool {
+	switch ch {
+	case '=', '+', ',', ';', '(', ')', '{', '}', ' ', 0:
+		return true
+	}
+	return false
+}
+
+func (l *Lexer) ReadUntilWhiteShapeOrSpecial() string {
 	position := l.currentPosition
-	for l.currentChar != ' ' && l.currentChar != 0 {
+	for !isDelimiter(l.currentChar) {
 		l.ReadChar()
 	}
 	return l.input[position:l.currentPosition]

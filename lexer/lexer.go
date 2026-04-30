@@ -36,9 +36,16 @@ func (l *Lexer) NextToken() token.Token {
 
 	switch l.currentChar {
 	case '=':
-		tok = NewToken(token.ASSIGN, l.currentChar)
+		if l.peakChar() == '=' {
+			tok = token.Token{Type: token.EQUAL, Literal: "=="}
+			l.ReadChar()
+		} else {
+			tok = NewToken(token.ASSIGN, l.currentChar)
+		}
 	case '+':
 		tok = NewToken(token.PLUS, l.currentChar)
+	case '-':
+		tok = NewToken(token.MINUS, l.currentChar)
 	case ',':
 		tok = NewToken(token.COMMA, l.currentChar)
 	case ';':
@@ -51,31 +58,53 @@ func (l *Lexer) NextToken() token.Token {
 		tok = NewToken(token.LBRACE, l.currentChar)
 	case '}':
 		tok = NewToken(token.RBRACE, l.currentChar)
+	case '<':
+		tok = NewToken(token.LARROW, l.currentChar)
+	case '>':
+		tok = NewToken(token.RARROW, l.currentChar)
+	case '!':
+		if l.peakChar() == '=' {
+			tok = token.Token{Type: token.NOT_EQUAL, Literal: "!="}
+			l.ReadChar()
+		} else {
+			tok = NewToken(token.BANG, l.currentChar)
+		}
+	case '*':
+		tok = NewToken(token.ASTERISK, l.currentChar)
+	case '/':
+		tok = NewToken(token.SLASH, l.currentChar)
 	case 0:
 		tok.Literal = ""
 		tok.Type = token.EOF
 	default:
+
 		if isDigit(l.currentChar) {
-			tok.Type = token.NUM
-			tok.Literal = l.readNum()
+			tok.Literal, tok.Type = l.readNum()
 			return tok
 		}
 
 		literal := l.ReadUntilWhiteShapeOrSpecial()
 		tok.Literal = literal
 
-		if isType(literal) {
-			tok.Type = token.I32
+		typeCheck := isType(literal)
+		if typeCheck != token.NONE {
+			tok.Type = typeCheck
 			return tok
 		}
 
 		switch literal {
 		case "fn":
 			tok.Type = token.FUNCTION
-		case "->":
-			tok.Type = token.RETURN_TYPE
 		case "return":
 			tok.Type = token.RETURN
+		case "true":
+			tok.Type = token.TRUE
+		case "false":
+			tok.Type = token.FALSE
+		case "if":
+			tok.Type = token.IF
+		case "else":
+			tok.Type = token.ELSE
 		default:
 			if isAlphaNumeric(literal) {
 				tok.Type = token.IDENT
@@ -92,7 +121,7 @@ func (l *Lexer) NextToken() token.Token {
 
 func isDelimiter(ch byte) bool {
 	switch ch {
-	case '=', '+', ',', ';', '(', ')', '{', '}', ' ', 0:
+	case '>', '<', '=', '+', '-', ',', ';', '(', ')', '{', '}', '*', '/', '!', ' ', 0:
 		return true
 	}
 	return false
@@ -130,12 +159,14 @@ func isAlphaNumeric(s string) bool {
 	return true
 }
 
-func isType(s string) bool {
+func isType(s string) token.TokenType {
 	switch s {
 	case "i32":
-		return true
+		return token.I32
+	case "f32":
+		return token.F32
 	default:
-		return false
+		return token.NONE
 	}
 }
 
@@ -143,13 +174,30 @@ func isDigit(ch byte) bool {
 	return '0' <= ch && ch <= '9'
 }
 
-func (l *Lexer) readNum() string {
+func (l *Lexer) readNum() (string, token.TokenType) {
 	position := l.currentPosition
-	for i := l.currentPosition; ; i++ {
-		if !isDigit(l.currentChar) {
+	hasDot := false
+	for isDelimiter(l.currentChar) == false {
+		if isDigit(l.currentChar) {
+		} else if l.currentChar == '.' && !hasDot {
+			hasDot = true
+		} else {
 			break
 		}
 		l.ReadChar()
 	}
-	return l.input[position:l.currentPosition]
+
+	literal := l.input[position:l.currentPosition]
+	if hasDot {
+		return literal, token.FLOATNUM
+	}
+	return literal, token.INTNUM
+}
+
+func (l *Lexer) peakChar() byte {
+	if l.readPosition >= len(l.input) {
+		return 0
+	} else {
+		return l.input[l.readPosition]
+	}
 }

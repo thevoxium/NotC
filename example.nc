@@ -1,7 +1,7 @@
 i32 five = 5;
 i32 ten = 10;
 
-fn add(i32 a, i32 b) -> i32 {
+fn i32 add(i32 a, i32 b) {
   return a + b;
 }
 

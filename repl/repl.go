@@ -8,9 +8,9 @@ import (
 	"notc/token"
 )
 
-const PROMPT = ">> "
+const PROMPT = "NotC >> "
 
-func Start(in io.Reader, out io.Writer) {
+func Start(in io.Reader) {
 	scanner := bufio.NewScanner(in)
 	for {
 		fmt.Printf(PROMPT)
@@ -20,6 +20,9 @@ func Start(in io.Reader, out io.Writer) {
 		}
 
 		line := scanner.Text()
+		if line == "quit" {
+			return
+		}
 
 		l := lexer.NewLexer(line)
 		for tok := l.NextToken(); tok.Type != token.EOF; tok = l.NextToken() {

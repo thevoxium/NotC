@@ -5,12 +5,13 @@ import (
 	"fmt"
 	"io"
 	"notc/lexer"
+	"notc/parser"
 	"notc/token"
 )
 
 const PROMPT = "NotC >> "
 
-func Start(in io.Reader) {
+func Start(in io.Reader, mode int) {
 	scanner := bufio.NewScanner(in)
 	for {
 		fmt.Printf(PROMPT)
@@ -25,8 +26,18 @@ func Start(in io.Reader) {
 		}
 
 		l := lexer.NewLexer(line)
-		for tok := l.NextToken(); tok.Type != token.EOF; tok = l.NextToken() {
-			fmt.Printf("%+v\n", tok)
+
+		if mode == 1 {
+			p := parser.NewParser(l)
+			program := p.ParseProgram()
+			for i := 0; i < len(program.Statements); i++ {
+				fmt.Println(program.Statements[i])
+			}
+		} else {
+			for tok := l.NextToken(); tok.Type != token.EOF; tok = l.NextToken() {
+				fmt.Printf("%+v\n", tok)
+			}
 		}
+
 	}
 }

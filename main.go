@@ -3,8 +3,10 @@ package main
 import (
 	"notc/repl"
 	"os"
+	"strconv"
 )
 
 func main() {
-	repl.Start(os.Stdin)
+	mode, _ := strconv.Atoi(os.Args[1])
+	repl.Start(os.Stdin, mode)
 }

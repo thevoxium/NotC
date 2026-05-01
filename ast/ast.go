@@ -33,9 +33,9 @@ func (p *Program) TokenLiteral() string {
 }
 
 type TypeStatement struct {
-	Name  *Identifier
-	Value Expression
-	Token token.Token // type token like f32, i32
+	TypeName *Identifier
+	Value    Expression
+	Token    token.Token // type token like f32, i32
 }
 
 func (ts *TypeStatement) statementNode() {}
@@ -44,8 +44,8 @@ func (ts *TypeStatement) TokenLiteral() string {
 }
 
 type Identifier struct {
-	Value string
-	Token token.Token
+	IdentName string
+	Token     token.Token
 }
 
 func (id *Identifier) expressionNode() {}

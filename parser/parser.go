@@ -49,6 +49,28 @@ func (p *Parser) parseStatement() ast.Statement {
 	}
 }
 
-func (p *Parser) parseTypeStatements() ast.Statement {
-	return nil
+func (p *Parser) parseTypeStatements() *ast.TypeStatement {
+	stmt := &ast.TypeStatement{Token: p.currToken}
+	if !p.expectPeek(token.IDENT) {
+		return nil
+	}
+
+	stmt.TypeName = &ast.Identifier{IdentName: p.currToken.Literal, Token: p.currToken}
+	return stmt
+}
+
+func (p *Parser) currTokenExpected(t token.TokenType) bool {
+	return p.currToken.Type == t
+}
+
+func (p *Parser) peekTokenExpected(t token.TokenType) bool {
+	return p.peekToken.Type == t
+}
+
+func (p *Parser) expectPeek(t token.TokenType) bool {
+	if p.peekTokenExpected(t) {
+		p.nextToken()
+		return true
+	}
+	return false
 }

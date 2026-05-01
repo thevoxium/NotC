@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"fmt"
 	"notc/ast"
 	"notc/lexer"
 	"notc/token"
@@ -56,6 +57,14 @@ func (p *Parser) parseTypeStatements() *ast.TypeStatement {
 	}
 
 	stmt.TypeName = &ast.Identifier{IdentName: p.currToken.Literal, Token: p.currToken}
+	if !p.expectPeek(token.ASSIGN) {
+		return nil
+	}
+
+	for !p.currTokenExpected(token.SEMICOLON) {
+		p.nextToken()
+	}
+
 	return stmt
 }
 
@@ -72,5 +81,7 @@ func (p *Parser) expectPeek(t token.TokenType) bool {
 		p.nextToken()
 		return true
 	}
+	fmt.Printf("expected next token to be %s, got %s instead\n",
+		t, p.peekToken.Type)
 	return false
 }

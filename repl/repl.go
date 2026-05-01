@@ -32,11 +32,13 @@ func Start(in io.Reader, mode int) {
 			p := parser.NewParser(l)
 			program := p.ParseProgram()
 			for i := 0; i < len(program.Statements); i++ {
-				ts := program.Statements[i].(*ast.TypeStatement)
-				if ts != nil {
-					fmt.Printf("Type: %T\n", ts)
-					fmt.Printf("%+v\n", ts)
-					fmt.Printf("%+v\n", ts.TypeName)
+				stmt := program.Statements[i]
+				switch s := stmt.(type) {
+				case *ast.TypeStatement:
+					fmt.Printf("%+v\n", s)
+					fmt.Printf("%+v\n", s.TypeName)
+				case *ast.ReturnStatement:
+					fmt.Printf("%+v\n", s)
 				}
 				// fmt.Printf("Type: %T\n",program.Statements[i])
 				// fmt.Printf("%+v\n", program.Statements[i])

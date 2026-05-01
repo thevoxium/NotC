@@ -25,6 +25,24 @@ func (p *Parser) nextToken() {
 	p.peekToken = p.l.NextToken()
 }
 
+func (p *Parser) currTokenExpected(t token.TokenType) bool {
+	return p.currToken.Type == t
+}
+
+func (p *Parser) peekTokenExpected(t token.TokenType) bool {
+	return p.peekToken.Type == t
+}
+
+func (p *Parser) expectPeek(t token.TokenType) bool {
+	if p.peekTokenExpected(t) {
+		p.nextToken()
+		return true
+	}
+	fmt.Printf("expected next token to be %s, got %s instead\n",
+		t, p.peekToken.Type)
+	return false
+}
+
 func (p *Parser) ParseProgram() *ast.Program {
 	program := &ast.Program{}
 	program.Statements = []ast.Statement{}
@@ -45,6 +63,8 @@ func (p *Parser) parseStatement() ast.Statement {
 		return p.parseTypeStatements()
 	case token.F32:
 		return p.parseTypeStatements()
+	case token.RETURN:
+		return p.parseReturnStatements()
 	default:
 		return nil
 	}
@@ -68,20 +88,14 @@ func (p *Parser) parseTypeStatements() *ast.TypeStatement {
 	return stmt
 }
 
-func (p *Parser) currTokenExpected(t token.TokenType) bool {
-	return p.currToken.Type == t
-}
+func (p *Parser) parseReturnStatements() *ast.ReturnStatement {
+	stmt := &ast.ReturnStatement{Token: p.currToken}
 
-func (p *Parser) peekTokenExpected(t token.TokenType) bool {
-	return p.peekToken.Type == t
-}
+	p.nextToken()
 
-func (p *Parser) expectPeek(t token.TokenType) bool {
-	if p.peekTokenExpected(t) {
+	for !p.currTokenExpected(token.SEMICOLON) {
 		p.nextToken()
-		return true
 	}
-	fmt.Printf("expected next token to be %s, got %s instead\n",
-		t, p.peekToken.Type)
-	return false
+
+	return stmt
 }

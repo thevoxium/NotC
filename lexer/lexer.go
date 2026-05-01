@@ -88,7 +88,7 @@ func isDigit(ch byte) bool {
 func (l *Lexer) readNum() (string, token.TokenType) {
 	position := l.currentPosition
 	hasDot := false
-	for isDelimiter(l.currentChar) == false {
+	for !isDelimiter(l.currentChar) {
 		if isDigit(l.currentChar) {
 		} else if l.currentChar == '.' && !hasDot {
 			hasDot = true

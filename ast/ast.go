@@ -148,3 +148,22 @@ func (pe *PrefixExpression) String() string {
 	out.WriteString(")")
 	return out.String()
 }
+
+type InfixExpession struct {
+	Token    token.Token
+	Operator string
+	Right    Expression
+	Left     Expression
+}
+
+func (ie *InfixExpession) expressionNode()      {}
+func (ie *InfixExpession) TokenLiteral() string { return ie.Token.Literal }
+func (ie *InfixExpession) String() string {
+	var out bytes.Buffer
+	out.WriteString("(")
+	out.WriteString(ie.Left.String())
+	out.WriteString(ie.Operator)
+	out.WriteString(ie.Right.String())
+	out.WriteString(")")
+	return out.String()
+}

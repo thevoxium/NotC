@@ -1,9 +1,13 @@
 package ast
 
-import "notc/token"
+import (
+	"bytes"
+	"notc/token"
+)
 
 type Node interface {
 	TokenLiteral() string
+	String() string
 }
 
 type Statement interface {
@@ -32,6 +36,14 @@ func (p *Program) TokenLiteral() string {
 	}
 }
 
+func (p *Program) String() string {
+	var out bytes.Buffer
+	for _, s := range p.Statements {
+		out.WriteString(s.String())
+	}
+	return out.String()
+}
+
 type TypeStatement struct {
 	TypeName *Identifier
 	Value    Expression
@@ -43,6 +55,18 @@ func (ts *TypeStatement) TokenLiteral() string {
 	return ts.Token.Literal
 }
 
+func (ts *TypeStatement) String() string {
+	var out bytes.Buffer
+	out.WriteString(ts.Token.Literal + " ")
+	out.WriteString(ts.TypeName.String())
+
+	if ts.Value != nil {
+		out.WriteString(ts.Value.String())
+	}
+	out.WriteString(";")
+	return out.String()
+}
+
 type Identifier struct {
 	IdentName string
 	Token     token.Token
@@ -51,6 +75,9 @@ type Identifier struct {
 func (id *Identifier) expressionNode() {}
 func (id *Identifier) TokenLiteral() string {
 	return id.Token.Literal
+}
+func (id *Identifier) String() string {
+	return id.IdentName
 }
 
 type ReturnStatement struct {
@@ -61,4 +88,14 @@ type ReturnStatement struct {
 func (st *ReturnStatement) statementNode() {}
 func (st *ReturnStatement) TokenLiteral() string {
 	return st.Token.Literal
+}
+
+func (st *ReturnStatement) String() string {
+	var out bytes.Buffer
+	out.WriteString(st.TokenLiteral() + " ")
+	if st.ReturnValue != nil {
+		out.WriteString(st.ReturnValue.String())
+	}
+	out.WriteString(";")
+	return out.String()
 }

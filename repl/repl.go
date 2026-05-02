@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"fmt"
 	"io"
-	"notc/ast"
 	"notc/lexer"
 	"notc/parser"
 	"notc/token"
@@ -31,18 +30,7 @@ func Start(in io.Reader, mode int) {
 		if mode == 1 {
 			p := parser.NewParser(l)
 			program := p.ParseProgram()
-			for i := 0; i < len(program.Statements); i++ {
-				stmt := program.Statements[i]
-				switch s := stmt.(type) {
-				case *ast.TypeStatement:
-					fmt.Printf("%+v\n", s)
-					fmt.Printf("%+v\n", s.TypeName)
-				case *ast.ReturnStatement:
-					fmt.Printf("%+v\n", s)
-				}
-				// fmt.Printf("Type: %T\n",program.Statements[i])
-				// fmt.Printf("%+v\n", program.Statements[i])
-			}
+			fmt.Println(program.String())
 		} else {
 			for tok := l.NextToken(); tok.Type != token.EOF; tok = l.NextToken() {
 				fmt.Printf("%+v\n", tok)

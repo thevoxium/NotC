@@ -114,6 +114,15 @@ func (es *ExpressionStatement) String() string {
 	return ""
 }
 
+type FloatLiteral struct {
+	Token token.Token
+	Value float32
+}
+
+func (f *FloatLiteral) expressionNode()      {}
+func (f *FloatLiteral) TokenLiteral() string { return f.Token.Literal }
+func (f *FloatLiteral) String() string       { return f.Token.Literal }
+
 type IntegerLiteral struct {
 	Token token.Token
 	Value int64

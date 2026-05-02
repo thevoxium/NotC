@@ -5,6 +5,7 @@ import (
 	"notc/ast"
 	"notc/lexer"
 	"notc/token"
+	"strconv"
 )
 
 const (
@@ -36,7 +37,8 @@ func NewParser(l *lexer.Lexer) *Parser {
 	p.nextToken()
 	p.nextToken()
 	p.prefixParseFns = make(map[token.TokenType]prefixParseFn)
-	p.registerPrefix(token.IDENT, parseIdentifier)
+	p.registerPrefix(token.IDENT, p.parseIdentifier)
+	p.registerPrefix(token.INTNUM, p.parseIntegerLiteral)
 	return p
 }
 
@@ -149,4 +151,11 @@ func (p *Parser) parseExpression(order int) ast.Expression {
 
 func (p *Parser) parseIdentifier() ast.Expression {
 	return &ast.Identifier{IdentName: p.currToken.Literal, Token: p.currToken}
+}
+
+func (p *Parser) parseIntegerLiteral() ast.Expression {
+	it := &ast.IntegerLiteral{Token: p.currToken}
+	value, _ := strconv.ParseInt(p.currToken.Literal, 0, 64)
+	it.Value = value
+	return it
 }

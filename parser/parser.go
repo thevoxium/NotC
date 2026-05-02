@@ -7,6 +7,17 @@ import (
 	"notc/token"
 )
 
+const (
+	_ int = iota
+	LOWEST
+	EQUALS
+	LESSGREATER
+	SUM
+	PRODUCT
+	PREFIX
+	CALL
+)
+
 type (
 	prefixParseFn func() ast.Expression
 	infixParseFn  func(ast.Expression) ast.Expression
@@ -24,6 +35,8 @@ func NewParser(l *lexer.Lexer) *Parser {
 	p := &Parser{l: l}
 	p.nextToken()
 	p.nextToken()
+	p.prefixParseFns = make(map[token.TokenType]prefixParseFn)
+	p.registerPrefix(token.IDENT, parseIdentifier)
 	return p
 }
 
@@ -81,7 +94,7 @@ func (p *Parser) parseStatement() ast.Statement {
 	case token.RETURN:
 		return p.parseReturnStatements()
 	default:
-		return nil
+		return p.parseExpressionStatements()
 	}
 }
 
@@ -113,4 +126,27 @@ func (p *Parser) parseReturnStatements() *ast.ReturnStatement {
 	}
 
 	return stmt
+}
+
+func (p *Parser) parseExpressionStatements() *ast.ExpressionStatement {
+	stmt := &ast.ExpressionStatement{Token: p.currToken}
+	stmt.Expression = p.parseExpression(LOWEST)
+	if !p.expectPeek(token.SEMICOLON) {
+		return nil
+	}
+
+	return stmt
+}
+
+func (p *Parser) parseExpression(order int) ast.Expression {
+	prefixFn := p.prefixParseFns[p.currToken.Type]
+	if prefixFn == nil {
+		return nil
+	}
+	leftExp := prefixFn()
+	return leftExp
+}
+
+func (p *Parser) parseIdentifier() ast.Expression {
+	return &ast.Identifier{IdentName: p.currToken.Literal, Token: p.currToken}
 }

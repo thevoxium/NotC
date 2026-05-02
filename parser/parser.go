@@ -7,10 +7,17 @@ import (
 	"notc/token"
 )
 
+type (
+	prefixParseFn func() ast.Expression
+	infixParseFn  func(ast.Expression) ast.Expression
+)
+
 type Parser struct {
-	l         *lexer.Lexer
-	currToken token.Token
-	peekToken token.Token
+	l              *lexer.Lexer
+	currToken      token.Token
+	peekToken      token.Token
+	prefixParseFns map[token.TokenType]prefixParseFn
+	infixParseFns  map[token.TokenType]infixParseFn
 }
 
 func NewParser(l *lexer.Lexer) *Parser {
@@ -23,6 +30,14 @@ func NewParser(l *lexer.Lexer) *Parser {
 func (p *Parser) nextToken() {
 	p.currToken = p.peekToken
 	p.peekToken = p.l.NextToken()
+}
+
+func (p *Parser) registerPrefix(tokType token.TokenType, fn prefixParseFn) {
+	p.prefixParseFns[tokType] = fn
+}
+
+func (p *Parser) registerInfix(tokType token.TokenType, fn infixParseFn) {
+	p.infixParseFns[tokType] = fn
 }
 
 func (p *Parser) currTokenExpected(t token.TokenType) bool {

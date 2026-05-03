@@ -59,7 +59,7 @@ func (ts *TypeStatement) String() string {
 	var out bytes.Buffer
 	out.WriteString(ts.Token.Literal + " ")
 	out.WriteString(ts.TypeName.String())
-
+	out.WriteString(token.ASSIGN)
 	if ts.Value != nil {
 		out.WriteString(ts.Value.String())
 	}

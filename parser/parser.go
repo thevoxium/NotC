@@ -135,10 +135,11 @@ func (p *Parser) parseTypeStatements() *ast.TypeStatement {
 	if !p.expectPeek(token.ASSIGN) {
 		return nil
 	}
-
-	for !p.currTokenExpected(token.SEMICOLON) {
-		p.nextToken()
-	}
+	p.nextToken()
+	stmt.Value = p.parseExpressionStatements().Expression
+	// for !p.currTokenExpected(token.SEMICOLON) {
+	// 	p.nextToken()
+	// }
 
 	return stmt
 }

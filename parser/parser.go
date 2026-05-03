@@ -53,6 +53,17 @@ func NewParser(l *lexer.Lexer) *Parser {
 	p.registerPrefix(token.FLOATNUM, p.parseFloatLiteral)
 	p.registerPrefix(token.BANG, p.parsePrefixExpression)
 	p.registerPrefix(token.MINUS, p.parsePrefixExpression)
+
+	p.infixParseFns = make(map[token.TokenType]infixParseFn)
+	p.registerInfix(token.PLUS, p.parseInfixExpression)
+	p.registerInfix(token.MINUS, p.parseInfixExpression)
+	p.registerInfix(token.SLASH, p.parseInfixExpression)
+	p.registerInfix(token.ASTERISK, p.parseInfixExpression)
+	p.registerInfix(token.EQUAL, p.parseInfixExpression)
+	p.registerInfix(token.NOT_EQUAL, p.parseInfixExpression)
+	p.registerInfix(token.LARROW, p.parseInfixExpression)
+	p.registerInfix(token.RARROW, p.parseInfixExpression)
+
 	return p
 }
 
@@ -147,8 +158,8 @@ func (p *Parser) parseReturnStatements() *ast.ReturnStatement {
 func (p *Parser) parseExpressionStatements() *ast.ExpressionStatement {
 	stmt := &ast.ExpressionStatement{Token: p.currToken}
 	stmt.Expression = p.parseExpression(LOWEST)
-	if !p.expectPeek(token.SEMICOLON) {
-		return nil
+	if p.peekTokenExpected(token.SEMICOLON) {
+		p.nextToken()
 	}
 
 	return stmt
@@ -160,6 +171,16 @@ func (p *Parser) parseExpression(order int) ast.Expression {
 		return nil
 	}
 	leftExp := prefixFn()
+
+	for !p.peekTokenExpected(token.SEMICOLON) && order < p.peekPrecedence() {
+		infixFn := p.infixParseFns[p.peekToken.Type]
+		if infixFn == nil {
+			return leftExp
+		}
+		p.nextToken()
+		leftExp = infixFn(leftExp)
+	}
+
 	return leftExp
 }
 
@@ -203,4 +224,12 @@ func (p *Parser) peekPrecedence() int {
 		return p
 	}
 	return LOWEST
+}
+
+func (p *Parser) parseInfixExpression(left ast.Expression) ast.Expression {
+	e := &ast.InfixExpession{Token: p.currToken, Operator: p.currToken.Literal, Left: left}
+	precedence := p.currPrecedence()
+	p.nextToken()
+	e.Right = p.parseExpression(precedence)
+	return e
 }
